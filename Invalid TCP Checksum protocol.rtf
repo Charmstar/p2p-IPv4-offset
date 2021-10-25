@@ -51,12 +51,13 @@ at the receiver. Not all NATs will port forward an invalid TCP Checksum, but the
 translation (e.g. on a LAN) SYN ESCAPE packets are not needed but ESCAPE packets are not accumulated, so won't interfere with "Invalid TCP Checksum protocol" 
 encrypted file transfers that may also require per TCP Checksum byte-swapping.
 
-Binary mode file transfer makes most efficient use of gpg's compression. 
+Binary mode file transfer enhances gpg's overall compression effect in operation. 
 
 Note that a Mac with Intel or Apple CPU is little-endian with respect to memory data storage, but unlike CentOS7's Python scapy, MacOS's Python scapy 
-does not put invalid TCP Checksums in network order for network transmission.  All other IP and TCP header parameters must be in network order to route to 
-intended destination. Consequently, Linux running on an Intel CPU must byte-swap invalid TCP Checksums received from a Mac sender.
+does not deliberately ovewrite invalid TCP Checksums in network order for network transmission.  All other IP and TCP header parameters must be in network order
+to route to the intended IP destination. Consequently, a preamble of four invalid TCP checksums received by CentOS7 on a Intel CPU discovers that it must 
+byte-swap invalid TCP Checksum SYNs received from a Mac sender.
 
-"Invalid TCP Checksum protocol" uses the first four SYN TCP Checksums received at each end to determine how the receiver transforms subsequent SYN 
+"Invalid TCP Checksum protocol" uses the first four SYN TCP Checksums received at each IP end-point to determine how the receiver transforms subsequent SYN 
 TCP Checksums to the originally sent hex values that carry two bytes of an encrypted file.
 
