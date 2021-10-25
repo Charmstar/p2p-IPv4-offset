@@ -9,7 +9,7 @@ One way to make SYNs discernible by mutual agreement is to use a libpcap capture
 
               "tcp[tcp-flags] & tcp-syn !=0 && tcp[tcp-flags] & tcp-ack ==0 && dst port 22 && src port 20" 
         
-is an example capture filter SYN port combination that will not likely encounter false positives from another source's SYN.
+Above is an example capture filter SYN port combination that will not likely encounter false positives from another source's SYN.
 
 To start "Invalid TCP Checksum protocol", sender initiates a discernible, valid TCP Checksum SYN to an IPv4 destination using Python's scapy.  Sender next 
 crafts three scapy discernible SYNs with TCP Checksums 0xffff, 0x0, 0xff00 and sends these respectively to the receiver's Public IPv4 address, which may be 
@@ -19,7 +19,7 @@ NATed by port forwarding to a LAN IPv4 address.  For example:
 >>>send(p)
 >>>p=IP(dst="IPv4addr")/TCP(dport=22, sport=20, chksum=0xffff)
 >>>send(p)
->>>p=IP(dst="IPv4addr")/TCP(dport=22, sport=20, chksum=0x0))
+>>>p=IP(dst="IPv4addr")/TCP(dport=22, sport=20, chksum=0x0)
 >>>send(p)
 >>>p=IP(dst="IPv4addr")/TCP(dport=22, sport=20, chksum=0xff00)
 >>>send(p)
@@ -41,8 +41,8 @@ TCP Checksum). Receiver's discernible SYN ESCAPE packet is the actual TCP Checks
 When sender later intends to encode 0xffff from an encrypted file into a discernible SYN TCP Checksum it is preceded by a discernible ESCAPE SYN and the 
 receiver interprets the two received SYN packets as a single 0xffff, even if the second SYN packet is received as 0x0.  Two discernible ESCAPE SYN packets 
 are sent to encode two bytes of a single valid TCP Checksum. When there is no OFFSET, then a received lone 0x0 is always interpreted as 0x0. Otherwise, an 
-OFFSET is indicated by the second and third received discernible SYNs. Subsequent received SYN's TCP Checksum minus OFFSET modulo 0x10000 and apply 
-byte-swapping if required per the fourth received discernible SYN, reveals the sender's intended two bytes per packet hex encoding that receiver 
+OFFSET is indicated by the second and third received discernible SYNs. Subsequent SYN TCP Checksums minus OFFSET modulo 0x10000, then apply 
+byte-swapping if required per the fourth received discernible SYN, reveal the sender's intended two bytes per packet hex encoding that receiver 
 successively accumulates to a gpg decryptible file that confirms error free transmission.
 
 Once the respective ESCAPE SYN TCP Checksum hex values are derived for sender and receiver, consecutive invalid SYN TCP Checksums (possibly peppered with 
@@ -51,13 +51,11 @@ at the receiver. Not all NATs will port forward an invalid TCP Checksum, but the
 translation (e.g. on a LAN) SYN ESCAPE packets are not needed but ESCAPE packets are not accumulated, so won't interfere with "Invalid TCP Checksum protocol" 
 encrypted file transfers that may also require per TCP Checksum byte-swapping.
 
-Binary mode file transfer allows gpg to compress and encrypt. UUencode avoids end-to-end network transport obstacles without invalid TCP checksums, but 
-this gives up the compression advantage by doubling the filesize needed for encrypted file transfer. 
+Binary mode file transfer makes most efficient use of gpg's compression. 
 
 Note that a Mac with Intel or Apple CPU is little-endian with respect to memory data storage, but unlike CentOS7's Python scapy, MacOS's Python scapy 
 does not put invalid TCP Checksums in network order for network transmission.  All other IP and TCP header parameters must be in network order to route to 
-intended destination. Consequently, Linux running on an Intel CPU must byte-swap invalid TCP Checksums received from a Mac sender, while a Mac receiver does not 
-have to byte-swap, (assuming untested Mac to Mac is indeed possible).
+intended destination. Consequently, Linux running on an Intel CPU must byte-swap invalid TCP Checksums received from a Mac sender.
 
 "Invalid TCP Checksum protocol" uses the first four SYN TCP Checksums received at each end to determine how the receiver transforms subsequent SYN 
 TCP Checksums to the originally sent hex values that carry two bytes of an encrypted file.
