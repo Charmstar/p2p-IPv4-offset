@@ -1,14 +1,15 @@
 
-Libpcap captures discernible SYNs that encode and transfer an encrypted file two bytes at a time in successive, SYN-only TCP Checksums, before the receiver's 
-Linux kernel evaluates and discards invalid TCP packets, assuming TCP Offload is disabled on sender's Ethernet port.  Continuous, successive SYNs resemble a 
-SYN flood attack that unaffected censors presumably track as laissez-faire and do not expend engineering effort to block.
+Libpcap captures discernible SYNs that encode and transfer an encrypted file two bytes at a time in successive, SYN-only TCP Checksums, before the
+receiver's Linux kernel evaluates and discards invalid TCP packets, assuming TCP Offload is disabled on sender's Ethernet port.  Continuous, successive 
+SYNs resemble a SYN flood attack that unaffected censors presumably track as laissez-faire and do not expend engineering effort to block.
 
 A discernible SYN receiver determines a two byte OFFSET, or byte swap correction for unmatched endian end-points, or both, by receiving four specially 
 Python scapy crafted and discernible "Invalid TCP Checksum protocol" SYNs.  The receiver then returns the same four discernible SYNs back to the sender.  
-One way to make SYNs discernible by mutual agreement is to use a libpcap capture filter for SYN destination port 22 with source port 20: 
+One way to make SYNs discernible by mutual agreement is to use a libpcap capture filter for SYN destination port 22 with source port 20. 
 
-"tcp[tcp-flags] & tcp-syn !=0 && tcp[tcp-flags] & tcp-ack ==0 && dst port 22 && src port 20" 
-which is an example SYN port combination that will not likely encounter false positives from another source's SYN.
+              "tcp[tcp-flags] & tcp-syn !=0 && tcp[tcp-flags] & tcp-ack ==0 && dst port 22 && src port 20" 
+        
+is an example capture filter SYN port combination that will not likely encounter false positives from another source's SYN.
 
 To start "Invalid TCP Checksum protocol", sender initiates a discernible, valid TCP Checksum SYN to an IPv4 destination using Python's scapy.  Sender next 
 crafts three scapy discernible SYNs with TCP Checksums 0xffff, 0x0, 0xff00 and sends these respectively to the receiver's Public IPv4 address, which may be 
@@ -28,7 +29,7 @@ for subsequent discernible two byte encoded SYN TCP Checksums.  If it is 0x00ff 
 require byte-swapping. 
 
 If the fourth received discernible SYN's TCP Checksum is anything else, then the second and third received discernible SYN TCP Checksums are both the same 
-hex value that conveniently defines the OFFSET! When the fourth discernible SYN\'92s hex value minus OFFSET modulus 0x10000 is 0x00ff, then subsequent 
+hex value that conveniently defines the OFFSET! When the fourth discernible SYN's hex value minus OFFSET modulus 0x10000 is 0x00ff, then subsequent 
 received discernible SYNs require byte-swapping. 
 
 Receiver uses the OFFSET, if any, to derive the SYN sender's original two byte valid TCP Checksum's hex value: this is the first received discernible SYN's 
