@@ -55,8 +55,8 @@ Binary mode file transfer allows gpg to compress and encrypt. UUencode avoids en
 this gives up the compression advantage by doubling the filesize needed for encrypted file transfer. 
 
 Note that a Mac with Intel or Apple CPU is little-endian with respect to memory data storage, but unlike CentOS7's Python scapy, MacOS's Python scapy 
-does not put TCP Checksums in network order for network transmissionn.  All other IP and TCP header parameters must be in network order to route to 
-intended destination. Consequently, Linux running on an Intel CPU must byte-swap TCP Checksums received from a Mac sender, while a Mac receiver does not 
+does not put invalid TCP Checksums in network order for network transmission.  All other IP and TCP header parameters must be in network order to route to 
+intended destination. Consequently, Linux running on an Intel CPU must byte-swap invalid TCP Checksums received from a Mac sender, while a Mac receiver does not 
 have to byte-swap, (assuming untested Mac to Mac is indeed possible).
 
 "Invalid TCP Checksum protocol" uses the first four SYN TCP Checksums received at each end to determine how the receiver transforms subsequent SYN 
