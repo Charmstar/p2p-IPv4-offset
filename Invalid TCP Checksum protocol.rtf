@@ -58,6 +58,6 @@ does not deliberately ovewrite invalid TCP Checksums in network order for networ
 network order to route to the intended IP destination. Consequently, a preamble of four invalid TCP checksums received by CentOS7 on a Intel CPU discovers 
 that it must byte-swap invalid TCP Checksum SYNs received from a Mac sender.
 
-"Invalid TCP Checksum protocol" uses the first four SYN TCP Checksums received at each IP end-point to determine how the receiver transforms subsequent 
-storage class of invalid TCP Checksum SYNs to the originally encoded hex values that each carry (i.e. storage class) two bytes of an encrypted file.
+"Invalid TCP Checksum protocol" uses the first four SYN TCP Checksums received at each IP end-point to determine how the receiver transforms a subsequent 
+storage class of invalid TCP Checksum SYNs back to the originally encoded hex values that each carry two bytes of an encrypted file.
 
