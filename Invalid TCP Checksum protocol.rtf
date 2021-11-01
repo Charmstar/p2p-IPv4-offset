@@ -3,61 +3,56 @@ Libpcap captures discernible SYNs that encode and transfer an encrypted file two
 receiver's Linux kernel evaluates and discards invalid TCP packets, assuming TCP Offload is disabled on sender's Ethernet port.  Continuous, successive 
 SYNs resemble a SYN flood attack that unaffected censors presumably track as laissez-faire and do not expend engineering effort to block.
 
-A discernible SYN receiver determines a two byte OFFSET, or byte swap correction for unmatched endian end-points, or both, by receiving four specially 
-Python scapy crafted and discernible "Invalid TCP Checksum protocol" SYNs.  The receiver then returns the same four discernible SYNs back to the sender.  
-One way to make SYNs discernible by mutual agreement is to use a libpcap capture filter for SYN destination port 22 with source port 20. 
+A discernible SYN receiver determines a two byte OFFSET after receiving five specially Python scapy crafted and discernible "Invalid TCP Checksum 
+protocol" SYNs.  The receiver then returns five discernible SYNs back to the sender. One way to make SYNs discernible by mutual agreement is to use a 
+libpcap capture filter for SYN destination port 22 with source port 20. 
 
               "tcp[tcp-flags] & tcp-syn !=0 && tcp[tcp-flags] & tcp-ack ==0 && dst port 22 && src port 20" 
         
 Above is an example capture filter SYN port combination that will not likely encounter false positives from another source's SYN.
 
-To start "Invalid TCP Checksum protocol", sender initiates a discernible, valid TCP Checksum SYN to an IPv4 destination using Python's scapy.  Sender next 
-crafts three scapy discernible SYNs with TCP Checksums 0xffff, 0x0, 0xff00 and sends these respectively to the receiver's Public IPv4 address, which may be 
-NATed by port forwarding to a LAN IPv4 address.  For example:
+To begin "Invalid TCP Checksum protocol", a sender initiates a discernible, valid TCP Checksum SYN to an IPv4 address using Python's scapy and waits 
+for SYN-ACK. Sender next sends a second valid TCP Checksum SYN followed by three scapy discernible SYNs with TCP Checksums 0xffff, 0x0, and 0xff00.
 
+>>>p=IP(dst="IPv4addr")/TCP(dport=22, sport=20)
+>>>sr1(p)
 >>>p=IP(dst="IPv4addr")/TCP(dport=22, sport=20)
 >>>send(p)
 >>>p=IP(dst="IPv4addr")/TCP(dport=22, sport=20, chksum=0xffff)
 >>>send(p)
 >>>p=IP(dst="IPv4addr")/TCP(dport=22, sport=20, chksum=0x0)
 >>>send(p)
->>>p=IP(dst="IPv4addr")/TCP(dport=22, sport=20, chksum=0xff00)
+>>>p=IP(dst="IPv4addr")/TCP(dport=22, sport=20, chksum=0xff00)   
 >>>send(p)
 
-Receiver examines the fourth discernible SYN's TCP Checksum received by libpcap.  If it is 0xff00 then there is no OFFSET and no byte-swapping is needed 
-for subsequent discernible two byte encoded SYN TCP Checksums.  If it is 0x00ff then there is no OFFSET and subsequent discernible SYN TCP Checksums 
-require byte-swapping. 
+Receiver's discernible ESCAPE SYN packet is defined as the actual TCP Checksum hex value of the second discernible SYN packet received. Receiver's 
+OFFSET is defined as the actual TCP Checksum hex value received in the fourth discernible SYN pakcet received. The receiver derives the sender's 
+original ESCAPE hex value (ESCAPE-OFFSET modulo 0x10000) and sends five discernible SYNs back to the sender. 
 
-If the fourth received discernible SYN's TCP Checksum is anything else, then the second and third received discernible SYN TCP Checksums are both the same 
-hex value that conveniently defines the OFFSET! When the fourth discernible SYN's hex value minus OFFSET modulus 0x10000 is 0x00ff, then subsequent 
-received discernible SYNs require byte-swapping. 
+>>>p=IP(dst="IPv4addr")/TCP(dport=22, sport=20)
+>>>send(p)
+>>>send(p) 
+>>>p=IP(dst="IPv4addr")/TCP(dport=22, sport=20, chksum=0xffff)
+>>>send(p)
+>>>p=IP(dst="IPv4addr")/TCP(dport=22, sport=20, chksum=0x0)
+>>>send(p)
+>>>p=IP(dst="IPv4addr")/TCP(dport=22, sport=20, chksum=(ESCAPE-OFFSET mod 0x1000))
+>>>send(p)
 
-Receiver uses the OFFSET, if any, to derive the SYN sender's original two byte valid TCP Checksum's hex value: this is the first received discernible SYN's 
-TCP Checksum hex value minus OFFSET, then modulo 0x10000. The receiver next responds with the same four SYN packets that the sender sent but in the reverse 
-point-to-point IP direction. The sender derives a TCP Checksum value (the first received ESCAPE TCP Checksum's hex value minus OFFSET modulo 0x10000), the 
-same way the receiver derived it and that hex value represents the sender's discernible SYN ESCAPE packet hex value. (Tada, without having to calculate a 
-TCP Checksum). Receiver's discernible SYN ESCAPE packet is the actual TCP Checksum hex value of the first discernible SYN received. 
+Sender derives sender's own original ESCAPE TCP Checksum hex value by subtracting the fifth discernible SYN's TCP Checksum from the fourth discernible SYN's
+TCP Checksum, without having to calculate a TCP Checksum!
 
 When sender later intends to encode 0xffff from an encrypted file into a discernible SYN TCP Checksum it is preceded by a discernible ESCAPE SYN and the 
 receiver interprets the two received SYN packets as a single 0xffff, even if the second SYN packet is received as 0x0.  Two discernible ESCAPE SYN packets 
 are sent to encode two bytes of a single valid TCP Checksum. When there is no OFFSET, then a received lone 0x0 is always interpreted as 0x0. Otherwise, an 
-OFFSET is indicated by the second and third received discernible SYNs. Subsequent SYN TCP Checksums minus OFFSET modulo 0x10000, then apply 
-byte-swapping if required per the fourth received discernible SYN, reveal the sender's intended two bytes per packet hex encoding that receiver 
-successively accumulates to a gpg decryptible file that confirms error free transmission.
+OFFSET is indicated by the second and third received discernible SYNs. Subsequent SYN TCP Checksums minus OFFSET modulo 0x10000 reveal the sender's 
+intended two bytes per packet hex encoding that receiver successively accumulates to a gpg decryptible file that confirms error free transmission.
 
 Once the respective ESCAPE SYN TCP Checksum hex values are derived for sender and receiver, consecutive invalid SYN TCP Checksums (possibly peppered with 
 an occasional valid TCP Checksum ESCAPE packet) transfer an encrypted file from sender to receiver, two bytes at a time, captured by a discernible libpcap
 at the receiver. Not all NATs will port forward an invalid TCP Checksum, but there are some home wireless routers that do. When there is no end-to-end NAT
-translation (e.g. on a LAN) SYN ESCAPE packets are not needed but ESCAPE packets are not accumulated, so won't interfere with "Invalid TCP Checksum protocol" 
-encrypted file transfers that may also require per TCP Checksum byte-swapping.
+translation (e.g. on a LAN) SYN ESCAPE packets are not needed but ESCAPE packets are not accumulated, so won't interfere with encrypted file transfers.
 
-Binary mode file transfer enhances gpg's overall compression effect in operation. 
-
-Note that a Mac with Intel or Apple CPU is little-endian with respect to memory data storage, but unlike CentOS7's Python scapy, MacOS's Python scapy 
-does not deliberately ovewrite invalid TCP Checksums in network order for network transmission.  All other IP and TCP header parameters must be in
-network order to route to the intended IP destination. Consequently, a preamble of four invalid TCP checksums received by CentOS7 on a Intel CPU discovers 
-that it must byte-swap invalid TCP Checksum SYNs received from a Mac sender.
-
-"Invalid TCP Checksum protocol" uses the first four SYN TCP Checksums received at each IP end-point to determine how the receiver transforms a subsequent 
-storage class of invalid TCP Checksum SYNs back to the originally encoded hex values that each carry two bytes of an encrypted file.
+Invalid TCP Checksum protocol is intended for binary mode encrypted text file transfers between little-endian end-points. Binary mode encrypted binary
+file transfer is also possible between Linux end-points, Mac end-points require special instructions to byte-swap decrypted binary files.
 
