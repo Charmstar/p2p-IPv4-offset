@@ -4,7 +4,7 @@ receiver's Linux kernel evaluates and discards invalid TCP packets, assuming TCP
 SYNs resemble a SYN flood attack that unaffected censors presumably track as laissez-faire and do not expend engineering effort to block.
 
 Invalid TCP Checksum protocol encodes an encrypted text file two bytes at a time in successive, discernible SYN TCP Checksums. A point-to-point receiver
-accumulates received discernible SYNs into a file (translatedbinaryout), two bytes at a time, then uses gpg -d to decrypt that file.
+accumulates received discernible SYNs, adjusted for any NAT OFFSET, into a file (translatedbinaryout), then uses gpg -d to decrypt that file.
  
 One way to make SYNs discernible by mutual agreement is to use a libpcap capture filter for SYN destination port 22 with source port 20. 
 
@@ -12,8 +12,8 @@ One way to make SYNs discernible by mutual agreement is to use a libpcap capture
         
 Above is an example capture filter SYN port combination that will not likely encounter false positives from another source's SYN.
 
-Sender checks far-end with Python scapy sr1() to test if far-end IPv4 address is awake. If no SYN-ACK answer then do it again until SYN-ACK is received. 
-When sender receoves SYN-ACK, sender begins a five packet preample to the point-to-point IPv4 address.
+Sender must know the far-end's IPv4 address and uses Python scapy sr1() to test if far-end IPv4 address is awake. If no SYN-ACK answer then do it again until
+SYN-ACK is received.  When sender receives SYN-ACK, sender begins a five packet preample to the known point-to-point IPv4 address.
 
 >>>p=IP(dst="IPv4addr")/TCP(dport=22, sport=20)
 >>>sr1(p)
@@ -29,18 +29,19 @@ When sender receoves SYN-ACK, sender begins a five packet preample to the point-
 Receiver's discernible ESCAPE SYN packet (ESCAPE-R) is defined as the actual TCP Checksum hex value of the first or second discernible SYN packet received.
 Receiver's OFFSET is defined as the actual TCP Checksum hex value received in the fourth discernible SYN packet. The fifth discernible SYN is used for debugging.
 
-Receiver uses OFFSET to transform subsequent received discernible TCP Checksums back to sender's original intended TCP Checksum hex values. 
+Receiver uses OFFSET to translate subsequent received discernible TCP Checksums back to sender's original intended TCP Checksum hex values. 
 
-Receiver derives the sender's original ESCAPE-S hex value (ESCAPE-R minus OFFSET modulo 0x10000) and sends a preamble of five discernible SYNs back to the sender. 
+Receiver derives the sender's original ESCAPE-S hex value (ESCAPE-R minus OFFSET modulo 0x10000) and sends a preamble of five discernible SYNs back to the 
+sender's destination IPv4 address gleaned from the source IPv4 address in each of the above. 
 
->>>p=IP(dst="IPv4addr")/TCP(dport=22, sport=20)
+>>>p=IP(dst="gleaned IPv4addr")/TCP(dport=22, sport=20)
 >>>send(p)
 >>>send(p) 
->>>p=IP(dst="IPv4addr")/TCP(dport=22, sport=20, chksum=0xffff)
+>>>p=IP(dst="gleaned IPv4addr")/TCP(dport=22, sport=20, chksum=0xffff)
 >>>send(p)
->>>p=IP(dst="IPv4addr")/TCP(dport=22, sport=20, chksum=0x0)
+>>>p=IP(dst="gleaned IPv4addr")/TCP(dport=22, sport=20, chksum=0x0)
 >>>send(p)
->>>p=IP(dst="IPv4addr")/TCP(dport=22, sport=20, chksum=(ESCAPE-R minus OFFSET mod 0x10000))
+>>>p=IP(dst="gleaned IPv4addr")/TCP(dport=22, sport=20, chksum=(ESCAPE-R minus OFFSET mod 0x10000))
 >>>send(p)
 
 Sender derives sender's own original ESCAPE-S TCP Checksum hex value by subtracting the fifth received discernible SYN's TCP Checksum from the fourth discernible
@@ -49,14 +50,13 @@ discernible SYN TCP Checksums.
 
 When the two bytes to be transferred are 0xffff then sender first sends an ESCAPE packet and receiver interprets the two packets together as 0xffff, even if 
 the second packet is received as 0x0. A lone 0x0 or 0xffff is interpreted as 0x0.  Two successive discernible ESCAPE packets are interpreted by receiver as one.   
-Receiver decodes successive discernible SYNs each as TCP Checksum minus OFFSET modulo 0x10000, to reveal the sender's intended two bytes per packet hex 
-encoding that receiver successively accumulates, two bytes at a time, to a gpg decryptible file that confirms error free transmission.
+Receiver translates successive discernible SYNs, each as TCP Checksum minus OFFSET modulo 0x10000, to reveal the sender's intended two bytes per packet hex 
+encoding that receiver successively accumulates to a gpg decryptible file that confirms error free transmission.
 
-On a LAN, or point-to-point between two VPS Public IP addresses, there is no OFFSET, yet receiver's accumulated file is still gpg -d decryptable. When the third
-and fourth preamble SYNs are both the same value then there are one or more NATs in the point-to-point network path. Not all NATs will port forward an invalid 
-TCP Checksum SYN packet, but there are some home wireless routers that do.
+On a LAN, or point-to-point between two VPS Public IP addresses, there is no OFFSET (i.e. OFFSET=0x0), yet receiver's accumulated file is still gpg -d 
+decryptable. When the third and fourth preamble SYNs are both the same value (OFFSET > 0x0) then there are one or more NATs in the point-to-point network path. 
+Not all NATs will port forward an invalid TCP Checksum SYN packet, but there are some home wireless routers that do.
 
-Invalid TCP Checksum protocol is intended for binary mode encrypted text file transfer between little-endian end-points, preferably with even length files only.
-This accomodates Macs that decrypt the intended text correctly, but then freaks-out about something internal to gpg that even length files avoid.  
+Invalid TCP Checksum protocol is intended for binary mode encrypted text file transfer between little-endian end-points, preferably only for even length files.  
 
 
