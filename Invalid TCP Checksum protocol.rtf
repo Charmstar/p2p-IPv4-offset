@@ -13,7 +13,7 @@ One way to make SYNs discernible by mutual agreement is to use a libpcap capture
 Above is an example capture filter SYN port combination that will not likely encounter false positives from another source's SYN.
 
 Sender must know the far-end's IPv4 address and uses Python scapy sr1() to test if far-end IPv4 address is awake. If no SYN-ACK answer then do it again 
-until SYN-ACK is received.  When sender receives SYN-ACK, sender begins a five packet preample to the known point-to-point IPv4 address.
+until SYN-ACK is received.  When sender receives SYN-ACK, sender begins a four packet preample to the known point-to-point IPv4 address.
 
 >>>p=IP(dst="IPv4addr")/TCP(dport=22, sport=20)
 >>>sr1(p)
@@ -31,11 +31,10 @@ Receiver's OFFSET is defined as the actual TCP Checksum hex value received in th
 
 Receiver uses OFFSET to translate subsequent received discernible TCP Checksums back to sender's original intended TCP Checksum hex values. 
 
-Receiver derives the sender's original ESCAPE-S hex value (ESCAPE-R minus OFFSET modulo 0x10000) and sends a preamble of five discernible SYNs back to 
+Receiver derives the sender's original ESCAPE-S hex value (ESCAPE-R minus OFFSET modulo 0x10000) and sends a preamble of four discernible SYNs back to 
 the sender's destination IPv4 address gleaned from the source IPv4 address in each of the above. 
 
 >>>p=IP(dst="gleaned IPv4addr")/TCP(dport=22, sport=20)
->>>send(p)
 >>>send(p) 
 >>>p=IP(dst="gleaned IPv4addr")/TCP(dport=22, sport=20, chksum=0xffff)
 >>>send(p)
