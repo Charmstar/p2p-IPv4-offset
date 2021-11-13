@@ -1,7 +1,7 @@
 
 Libpcap captures discernible SYNs that encode and transfer an encrypted text file two bytes at a time in successive SYN-only TCP Checksums, before the
-receiver's Linux kernel evaluates and discards invalid TCP packets, assuming TCP Offload is disabled on sender's Ethernet port.  Continuous, successive 
-SYNs resemble a SYN flood attack that unaffected censors presumably track as laissez-faire and do not expend engineering effort to block.
+receiver's Linux kernel evaluates and discards invalid TCP packets, similar to Wireshark, assuming TCP Offload is disabled on sender's Ethernet port.  
+Continuous SYNs resemble a SYN flood attack that unaffected censors presumably track as laissez-faire and do not expend engineering effort to block.
 
 Invalid TCP Checksum protocol encodes an encrypted text file two bytes at a time in successive, discernible SYN-only TCP Checksums. A point-to-point 
 receiver accumulates received discernible SYN TCP Checksums, adjusted for any OFFSET due to NAT(s), into a file (translatedbinaryout) two bytes at a time,
@@ -36,10 +36,11 @@ is received as 0x0. A lone 0x0 or 0xffff received is interpreted as 0x0. When th
 packet is sent twice and receiver interprets two ESCAPE packets in succession as one. 
 
 On a LAN, or point-to-point between two VPS Public IP addresses, there is no OFFSET (i.e. OFFSET=0x0), yet receiver's accumulated file is still gpg -d 
-decryptable.   Not all NATs will port forward an invalid TCP Checksum SYN packet, but there are some home wireless routers that do.
+decryptable.   Not all NATs will port forward an invalid TCP Checksum SYN packet, but there are some home wireless routers that do.  Invalid TCP Checksum
+protocol discovers a non-zero OFFSET that is applied to each received discernible TCP Checksum, then stored in the translatedbinaryout file.
 
 Invalid TCP Checksum protocol is intended for binary mode encrypted text file transfer between little-endian end-points, preferably only using even length 
-files, to avoid bogus gpg decryption errors reported on odd length files.  
+files (as per ls -l), to avoid bogus gpg decryption errors reported on odd length files.  
 
 Preparations for Linux CentOS 7 :
 yum install update
