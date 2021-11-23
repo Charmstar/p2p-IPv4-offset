@@ -4,8 +4,8 @@ receiver's Linux kernel evaluates and discards invalid TCP packets, similar to W
 Continuous SYNs resemble a SYN flood attack that unaffected censors presumably track as laissez-faire and do not expend engineering effort to block.
 
 Invalid TCP Checksum protocol encodes an encrypted text file two bytes at a time in successive, discernible SYN-only TCP Checksums. A point-to-point 
-receiver accumulates received discernible SYN TCP Checksums, adjusted for any OFFSET due to NAT(s), into a file (translatedbinaryout) two bytes at a time,
-then uses gpg -d to decrypt that file.
+receiver accumulates received discernible SYN TCP Checksums, adjusted for any OFFSET due to NAT(s), into a file (translatedbinaryout) two bytes at a 
+time, then uses gpg -d to decrypt that file.
  
 One way to make SYNs discernible by mutual agreement is to use a libpcap capture filter for SYN destination port 22 with source port 20. 
 
@@ -26,19 +26,20 @@ order that scapy sends. This packet defines both the sender's ESCAPE packet per 
 >>>p=IP(dst=IPv4addr)/TCP(dport=22, sport=20)
 >>>send(p)
 
-The receiver.c program evaluates the above preamble when received. If the second and third TCP Checksums are the same value then there are one or more NATs
-in the point-to-point IP path, conveniently this same value is defined as OFFSET. All subsequent TCP Checksums received will subtract OFFSET modulo 0x10000
-to get back to the sender's intended value before storing in the translatedbinaryout file.
+The receiver.c program evaluates the above preamble when received. If the second and third TCP Checksums are the same value then there are one or 
+more NATs in the point-to-point IP path, and conveniently this same value defines the OFFSET variable for the receiver. All subsequent TCP Checksums 
+received will subtract OFFSET then modulo 0x10000 to get back to the sender's intended two byte value, before storing in the translatedbinaryout file.
 
 Invalid TCP Checksum protocol encodes an encrypted text file two bytes at a time: when those two bytes are ffff then nsendit.py first sends an ESCAPE
-packet, then sends a SYN with invalid TCP Checksum 0xffff and receiver interprets both packets together as only one packet 0xffff, even if the second packet
-is received as 0x0. A lone 0x0 or 0xffff received is interpreted as 0x0. When the two bytes of the sender's ESCAPE hex value need to be sent, then the ESCAPE
-packet is sent twice and receiver interprets two receiver ESCAPE packets in succession as one. 
+packet, then sends a SYN with invalid TCP Checksum 0xffff and receiver interprets both packets together as only one packet 0xffff, even if the second 
+packet is received as 0x0. A lone 0x0 or 0xffff received is interpreted as 0x0. When the two bytes of the sender's ESCAPE hex value need to be sent, 
+then the sender's ESCAPE packet is sent twice and receiver interprets two received ESCAPE packets in succession as one. 
 
-On a LAN, or point-to-point between two VPS Public IP addresses, there is no OFFSET (i.e. OFFSET=0x0), yet receiver's accumulated translatedbinaryout file is 
-still gpg -d decryptable.   Otherwise, there is a non-zero OFFSET indicating that there are one or more NATs in the direct IP point-to-point IP network path 
-that is subtracted modulo 0x10000 to each subsequent received discernible TCP Checksum, before storing in the translatedbinaryout file. Not all NATs will port
-forward an invalid TCP Checksum SYN packet and pass an invalid TCP Checksum on the way out, but there are some home wireless routers that do. 
+On a LAN, or point-to-point between two VPS Public IP addresses, there is no OFFSET (i.e. OFFSET=0x0), yet receiver's accumulated translatedbinaryout 
+file is still gpg -d decryptable.   Otherwise, there is a non-zero OFFSET indicating that there are one or more NATs in the direct IP point-to-point 
+IP network path that is subtracted and modulo 0x10000 to each subsequent received discernible TCP Checksum, before storing in the translatedbinaryout 
+file. Not all NATs will port forward an invalid TCP Checksum SYN packet and pass an invalid TCP Checksum on the way out, but there are some home 
+wireless routers that do. 
 
 Invalid TCP Checksum protocol is intended for binary mode encrypted text file transfer between little-endian end-points, preferably only using even length 
 files (as per ls -l), to avoid bogus gpg decryption errors reported on odd length files.  
