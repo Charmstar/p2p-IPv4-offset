@@ -1,0 +1,60 @@
+Build a CentOS Stream 8 USB flash boot disk for exclusive use with Invalid TCP Checksum protocol:
+Keep all encryption related activities isolated from all other activities. Rufus is a Windows program that creates a bootable disk from any iso file. 
+CentOS Stream 8 is the successor to CentOS 7. rufus converts a 10GB CentOS Stream 8 installation iso file to a CentOS Stream 8 installation USB boot disk.
+
+	1.	Download rufus-3.17d.exe and CentOS-Stream-8-x86_64-20211206-dvd1.iso on a Windows pc, in the same directory (Downloads). 
+
+	2.	Run rufus. Insert a USB flash disk 16GB or more that is OK to first be wiped clean.
+
+	3.	Rufus sees the USB flash disk that was inserted. Select OK to Start.
+
+	4.	After about 20 minutes, the USB flash disk is ready to boot. Set your computer’s BIOS boot order to boot a USB device before the hard disk 
+  or DVD. Secure Boot on newer PCs with TPM 2.0 chip makes this step difficult, USE AN OLDER COMPUTER instead!
+
+	5.	After CentOS Stream 8 is installed on a separate flash disk, remove the installation flash disk and boot the newly created CentOS Stream 8 
+  USB flash disk:
+
+	a.	# yum update (this will take an hour or more)
+
+	b.	# python2    (offers to install python 2.7.18)
+
+	c.	# yum install epel-release  (installs pip)
+
+	d.	# yum install python2-pip
+
+	e.	# pip2 install scapy   (installs scapy 2.4.5)
+
+	f.	# yum install wireshark (also installs tshark for nodes with no GUI)
+
+	g.	# dnf —enablerepo=powertools install libpcap-devel    (installs pcap.h)
+
+7.   Install Invalid TCP Checksum protocol:
+
+	a.	put SENDSYNS.cpio in /root/tmp on the above bootable USB flash disk,
+
+	b.	cpio -idv < SENDSYNS.cpio  (reports blocks created)
+
+	c.	cd SENDSYNS/SENDER, 
+
+	d.	# gcc receive1.c -o receive1 -lpcap
+
+	e.	cd ../RECEIVER, 
+
+	f.	# gcc receiver.c -o receiver -lpcap
+
+	g.	# ./receiver dev   (where dev is the IPv4 ethernet device per ifconfig). When packets stop coming in, Control-C to exit the receiver program.
+
+	i.	For larger files that are probably encrypted,
+
+	j.	# gpg -d translatedbinaryout | hexdump
+
+	k.	for smallish plaintext files that are not encrypted, for example Alook953e,
+
+	l.	# hexdump translatedbinaryout
+
+	m.	Receiver indicates a negative acknowledgement of the entire file transfer by not sending back anything, otherwise when receiver is satisfied 
+  with the received results, receiver sends back (gleaning the source IP from previous packets as destination IP) the received bytes contained in 
+  receiver’s translatedbinaryout file.
+
+	n.	When sender receives receiver’s positive acknowledgment sender compares this received file with the sent file. If different, or no response 
+  at all, sender keeps re-sending until receiver’s positive acknowledgment matches what is sent. See forthcoming “MITM Protection and Bad IP Path Detection.” 
