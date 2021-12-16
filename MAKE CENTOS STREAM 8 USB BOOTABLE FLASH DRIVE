@@ -24,7 +24,7 @@ CentOS Stream 8 is the successor to CentOS 7. rufus converts a 10GB CentOS Strea
 
 	e.	# pip2 install scapy   (installs scapy 2.4.5)
 
-	f.	# yum install wireshark (also installs tshark for nodes with no GUI)
+	f.	# yum install python2-devel
 
 	g.	# dnf —enablerepo=powertools install libpcap-devel    (installs pcap.h)
 
