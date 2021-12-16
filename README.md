@@ -3,4 +3,4 @@ Algorithm for an IP sender and an IP receiver to agree on an ESCAPE packet's TCP
 
 ENCRYPTED FILE DELIVERY VIA SYNS ONLY, under the radar, TWO ENCRYPTED BYTES IN EACH SYN'S TCP CHECKSUM.
 
-Download ZIP file under the green "Code" option to see formatted .rtf text files to install and use the working code inside SENDSYNS.cpio.
+Download ZIP file under the green "Code" option to get text files to install, configure and use the working code inside SENDSYNS.cpio.
