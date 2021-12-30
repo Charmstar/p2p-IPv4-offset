@@ -43,18 +43,18 @@ wireless routers that do.
 Invalid TCP Checksum protocol is intended for binary mode encrypted text file transfer between little-endian end-points, preferably only using even length 
 files (as per ls -l), to avoid bogus gpg decryption errors reported on odd length files.  
 
-Preparations for Linux CentOS 7 minimal install:
-yum install update
-yum install python2
-yum install python2-devel
-yum install epel-release
-yum install python2-pip
-pip2 install scapy
-yum install libpcap-devel
-yum install gcc
+Preparations for Linux CentOS 7 minimal install on USB:         Preparations for install on Raspberry Pi 4b with OS 10.30.2021 Desktop GUI:
+# yum install update                                            # sudo apt install python2
+# yum install python2                                           $ sudo apt install scapy
+# yum install python2-devel                                     $ sudo cp -r /lib/python3/dist-packages/scapy* /lib/python2.7/dist-packages
+# yum install epel-release                                      $ sudo apt install libpcap-dev    
+# yum install python2-pip                           
+# pip2 install scapy
+# yum install libpcap-devel
+# yum install gcc
+# yum group install "Server with GUI" (optional)
 
-In root's .bash_profile disable TCP Offload on sender:
-ethtool --offload enp0s25 rx off tx off 
+In root's .bash_profile disable TCP Offload on sender example: ethtool --offload enp0s25 rx off tx off 
 
 Linksys WRT3200ACM with firmware OpenWRT 19.07.5 r11257=5090i52ae3/LuCi openwrt-19.07 branch git-20.341.57626-5155b5 and
 Netgear Nighthawk AC1750 Model R6700-3 with firmware V1.04.106_10.0.80 will both port forward or pass an Invalid TCP Checksum.
