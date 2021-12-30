@@ -13,7 +13,7 @@ One way to make SYNs discernible by mutual agreement is to use a libpcap capture
         
 Above is an example capture filter SYN port combination that will not likely encounter false positives from another source's SYN.
 
-Sender's nsendit.py must know the far-end's IPv4 address and uses Python scapy sr1() to test if that far-end IPv4 address is awake, but first starts 
+Sender's nsendit.py must know the far-end's IPv4 address and uses python2's scapy sr1() to test if that far-end IPv4 address is awake, but first starts 
 the receive1.c program to capture the sr1()'s valid TCP Checksum on the way out, using ntohs() to correct back to little-endian order from the network
 order that scapy sends. This packet defines both the sender's ESCAPE packet per the tempfile4receive1 file and the receiver's ESCAPE packet as received. 
 
