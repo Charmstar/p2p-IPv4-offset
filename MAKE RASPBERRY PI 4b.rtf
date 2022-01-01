@@ -1,21 +1,20 @@
 
-Start with the SD Card Copier to clone your existing pi OS to prepare SENDSYNS on a separate SD, or download
-2021-10-30-raspios-bulleye-armhf-full.zip from raspberrypi.com for a new install. Preparation may differ 
-slightly for  each. 
+Start with the SD Card Copier to clone your existing pi OS to prepare SENDSYNS for exclusive use on a 
+separate SD, or download 2021-10-30-raspios-bulleye-armhf-full.zip from raspberrypi.com for a new install. 
+Preparation instructions may differ slightly for  each. 
 
 Raspberry Pi 4b OS preparation for SENDSYNS:
 
-Boot to GUI and then Enable SSH in pi's Desktop for Preferences\Raspberry\Interfaces 
+Boot to GUI and then Enable SSH in pi's Desktop for Preferences->Raspberry->Interfaces 
 this will require a reboot. 
-
 
 1. sudo apt install python2
 2. sudo apt install scapy 
 
-Look where scapy is installed. If /usr/lib/python2.7/dist-packages/scapy* is more than one file then that is 
-where scapy is installed so skip the next step. If not, then the next step copies scapy* to 
-usr/lib/python2.7/dist-packages from either /usr/lib/python3/dist-packages, or from 
-/usr/lib/python3.6/dist-packages, whichever is the one that has the scapy files and directories. For example:
+Look where scapy is installed, it needs to be in /usr/lib/python2.7/dist-packages/scapy*. If it is not,
+then the next step copies scapy* to usr/lib/python2.7/dist-packages from either 
+/usr/lib/python3/dist-packages, or from /usr/lib/python3.7/dist-packages, whichever is
+the one that has the scapy files and directories. For example:
 
 3. sudo cp -r /usr/lib/python3/dist-packages/scapy* /usr/lib/python2.7/dist-packages
 4  sudo apt-get install libpcap-dev
@@ -25,7 +24,7 @@ Use another computer to scp SENDSYNS.cpio to rpi-4b:
 
 At /home/pi:
 6. cpio -idv < SENDSYNS.cpio
-7.cd SENDSYNS/SENDER
+7. cd SENDSYNS/SENDER
 8. gcc receive1.c -o receive1 -lpcap
 Ignore any compiler warning, the compile is good.
 9. cd ../RECEIVER
@@ -35,13 +34,18 @@ When ready to receive:
 11. sudo ./receiver eth0
 
 To encrypt a file:
-gpg -e -u (email of sender's Private key) -r (email of recipient's Public key) somefile 
+gpg -e -u {email of sender's Private key} -r {email of recipient's Public key} somefile 
 produces somefile.gpg.
 
 If sender and receiver share the same key pair known only to them, then that key pair's email address is 
-used for both the sender and the recipient for encrypting. Now both sides are able to decrypt the same 
-undamaged file after a round trip that proves receiver has received the intended payload. Otherwise the 
-sender will need to compare byte for byte the sent file and the received positive acknowledgement file.
+used for both the user (-u) and the recipient (-r) for encrypting. Now both sides are able to decrypt 
+the same undamaged file and a round trip proves that receiver has received the intended payload. 
+
+A couple of lost packets are the most common message decryption or long plaintext file delivery failure.
+A short plaintext file will very likely be received in tact (or the message is understood despite any 
+missing packets), so receiver will not send anything back to indicate to the sender to resend, or may 
+send a short plaintext message to indicate what went wrong and whether to resend or not when a plaintext
+message is damaged but still readable. 
 
 When ready to send somefile.gpg, Control-C to stop the receiver program:
 12. cd ../SENDER
@@ -49,10 +53,11 @@ When ready to send somefile.gpg, Control-C to stop the receiver program:
 
 To positively acknowledge a just received decrypted or plaintext file, send back what is received:
 
-14. gpg -d tran* | hexdump to read encrypted files, or, if not the file does not decrypt then try 
-hexdump translatedbinaryout | {command that converts hex to text?} for plain text files.
+14. gpg -d tran* | hexdump to read encrypted files, or, if the file does not decrypt then try 
+hexdump translatedbinaryout | {command that converts hex to text?} for plaintext files.
 
 15. cd ../SENDER, sudo python2 nsendit.py w.x.y.z ../RECEIVER/translatedbinaryout
+The receiver gleans the destination IP for this message from the source IP of received messages.
 
-16. When done sending, cd ../RECEIVER and restart receiver program, sudo ./receiver eth0, so that it is 
-always available or powered down when not sending.
+16. When done sending, cd ../RECEIVER and restart receiver program, sudo ./receiver eth0, so that it
+is always available or powered down when not sending.
