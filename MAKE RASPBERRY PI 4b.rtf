@@ -1,0 +1,112 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2580
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;\f1\fnil\fcharset0 Menlo-Regular;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\margl1440\margr1440\vieww13260\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 \
+Start with the SD Card Copier to clone your existing pi OS to prepare SENDSYNS on a separate SD, or download
+\f1  2021-10-30-raspios-bulleye-armhf-full.zip 
+\f0 for a new install. Preparation may differ slightly for  each. \
+\
+Raspberry Pi 4b OS preparation for SENDSYNS:\
+\
+Boot to GUI and then Enable SSH in pi\'92s Desktop for Preferences\'97>Raspberry\'97>Interfaces \
+this will require a reboot. \
+\
+
+\f1 1. sudo apt install python2\
+2. sudo apt install scapy \
+
+\f0 \
+Look where scapy is installed. If 
+\f1 /usr/lib/python2/dist-packages/scapy*
+\f0  is more than one file then that is where scapy is installed so skip the next step. If not, then the next step is to copy 
+\f1 scapy* 
+\f0 to \
+
+\f1 /usr/lib/python2.7/dist-packages 
+\f0 from either 
+\f1 /usr/lib/python3/dist-packages,
+\f0  or from \
+
+\f1 /usr/lib/python3.6/dist-packages
+\f0 , whichever is the one that has the 
+\f1 scapy*
+\f0  files and directories. For example:\
+\
+
+\f1 3. sudo cp -r /usr/lib/python3/dist-packages/scapy* /usr/lib/python2.7/dist-packages\
+4  sudo apt-get install libpcap-dev\
+
+\f0 \
+Use another computer to scp SENDSYNS.cpio to 
+\f1 rpi-4b
+\f0 :\
+5. 
+\f1 scp pi@w.x.y.z:/home/pi SENDSYNS.cpio\
+
+\f0 \
+At 
+\f1 rpi-4b /home/pi:
+\f0 \
+6. 
+\f1 cpio -idv < SENDSYNS.cpio
+\f0 \
+7.
+\f1 cd SENDSYNS/SENDER
+\f0 \
+8.
+\f1  gcc receive1.c -o receive1 -lpcap
+\f0 \
+Ignore any compiler warning, the compile is good.\
+\
+9. 
+\f1 cd ../RECEIVER
+\f0 \
+10.
+\f1  gcc receiver.c -o receiver -lpcap
+\f0 \
+\
+When ready to receiver:\
+
+\f1 11. sudo ./receiver eth0
+\f0 \
+\
+To encrypt a file:\
+
+\f1 gpg -e -u (email of sender\'92s Private key) -r (email of recipient\'92s Public key) somefile 
+\f0 \
+produces somefile.gpg. \
+\
+If sender and receiver share the same key pair known only to them, then that key pair\'92s email address is used for both the sender and the recipient for encrypting. Now both sides are able to decrypt the same undamaged file after a round trip that proves receiver has received the intended payload. Otherwise the sender will need to compare byte for byte the sent file and the received positive acknowledgement file.\
+\
+When ready to send somefile, Control-C to stop the receiver program:\
+12. 
+\f1 cd ../SENDE
+\f0 R\
+13. s
+\f1 udo python2 nsendit.py z.w.x.y somefile.gpg
+\f0 \
+\
+To positively acknowledge a just received decrypted or plaintext file, send back what is received:\
+\
+14. Use
+\f1  gpg -d tran* | hexdump
+\f0  to read encrypted files, or, if not encrypted then use \
+
+\f1 hexdump translatedbinaryout | \{command that converts hex to text?\} 
+\f0 for plain text files.\
+\
+15.
+\f1   cd ../SENDER, sudo python2 nsendit.py z.w.x.y ../RECEIVER/translatedbinaryout
+\f0 \
+\
+16. When done sending, 
+\f1 cd ../RECEIVER 
+\f0 and restart receiver program, 
+\f1 sudo ./receiver eth0,
+\f0  so that it is always available or powered down when not sending.\
+\
+}
