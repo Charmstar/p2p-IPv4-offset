@@ -47,9 +47,9 @@ Preparations for Linux CentOS 7 minimal install on USB:         Preparations for
 # yum install update                                            # sudo apt install python2
 # yum install python2                                           $ sudo apt install scapy
 # yum install python2-devel                                     $ sudo cp -r /lib/python3/dist-packages/scapy* /lib/python2.7/dist-packages
-# yum install epel-release                                      $ sudo apt install libpcap-dev    
-# yum install python2-pip                           
-# pip2 install scapy
+# yum install epel-release                                      or maybe,
+# yum install python2-pip                                       $ sudo cp -r /lib/python3.6/dist-packages/scapy* /lib/python2.7/dist-packages
+# pip2 install scapy                                            $ sudo apt-get install libpcap-dev
 # yum install libpcap-devel
 # yum install gcc
 # yum group install "Server with GUI" (optional)
