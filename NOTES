@@ -1,6 +1,6 @@
 HANDSHAKE
 The only handshake is the sender’s first SYN packet must receive a SYN-ACK back, if not in a few seconds, then the sender knows to postpone sending 
-because the far-end is powered down. Both ends need to always either be powered down or in receive mode when running the ./receiver C executable. 
+because the far-end is powered down. Both ends need to always either be powered down or in receive mode when not sending. 
 
 ACKNOWLEDGING SUCCESSFUL FILE TRANSFER
 After several always perfect encrypted file transfers it is tempting to assume no acknowledgement is ever needed. But there are known network 
