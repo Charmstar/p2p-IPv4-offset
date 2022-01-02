@@ -8,11 +8,11 @@ conditions that may interfere on a given IP packet’s path, so some form of ack
 
 Since most transfers are perfect, it is suggested that the receiver only positively acknowledge a received translatedbinaryout file that 
 decrypts by sending back the translatedbinaryout file of just received bytes. Don’t send anything back when decryption fails, or optionally
-send back plaintext to help describe the decryption failure: "Received 309 bytes". "Wrong key", etc. Sender then compares the bytes sent 
-back by receiver to the encrypted bytes sent forward. When both are the same, as they most often will be, then there is an implicit 
+send back a plaintext file to help describe the decryption failure: "Received 309 bytes". "Wrong key", etc. Sender then compares the bytes
+sent back by receiver to the encrypted bytes sent forward. When both are the same, as they most often will be, then there is an implicit 
 acknowledgment that the sender’s message has been received properly. When not the same, sender resends the file transfer.
 
-When the bytes sender receives don’t match the bytes sent then the sender can repeat the process until sender sees the bytes received back
+When the bytes sender receives don’t match the bytes sent then the sender repeats the process until sender sees the bytes received back
 are equal to bytes sent. Sender will also notice when there is no positive acknowledgment or plaintext response and will repeat the file
 transfer to receiver, knowing that the receiver’s SYN-ACK handshake has confirmed that the receiver is not powered down. 
 
@@ -23,4 +23,5 @@ a new IP pair and therefore a new IP path. If there is still interference, then 
 
 TCP OFFLOAD
 TCP Offload only affects a sender, the receiver’s kernel always receives whole packets with a received TCP Checksum that may, or may not be 
-pre-evaluated and marked valid or invalid by a NIC. Some senders will have TCP Offload effectively disabled by default, so need not disable.
+pre-evaluated and marked valid or invalid by a NIC. Some senders will have TCP Offload effectively disabled by default, receiver can check
+sender's initial packets to know if efforts to disable sender's TCP Offload are needed when received TCP Checksums are never invalid.
