@@ -53,7 +53,7 @@ Preparations for Linux CentOS 7 minimal install on USB:         Preparations for
 # pip2 install scapy                                            $ sudo cp -r /usr/lib/python3.6/dist-packages/scapy* /usr/libp/python2.7/dist-packages                                                                                                                             
 # yum install gcc                                               or maybe:
 # yum group install "Server with GUI" (optional)                $ sudo cp-r /usr/lib/python3.7/dist-packages/scapy /usr/lib/python2.7/dist-packages
-# dnf —enablerepo=powertools install libpcap-devel              $ sudo apt-get install libpcap-dev
+# yum install libpcap-dev                                       $ sudo apt-get install libpcap-dev
 
 In root's .bash_profile disable TCP Offload on sender example: ethtool --offload enp0s25 rx off tx off, but is only necessary when there are consistent
 problems receiving decryptable or readable plaintext files.
