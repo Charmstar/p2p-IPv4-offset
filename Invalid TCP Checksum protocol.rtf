@@ -44,19 +44,20 @@ wireless routers that do.
 Invalid TCP Checksum protocol is intended for binary mode encrypted text file transfer between little-endian end-points, preferably only using even 
 length files (as per ls -l), to avoid bogus gpg decryption errors reported on odd length files. 
 
-Preparations for Linux CentOS 7 minimal install on USB:         Preparations for install on Raspberry Pi 4b with OS 10.30.2021 Desktop GUI:
+Preparations for Linux CentOS Stream 8 install on USB:         Preparations for install on Raspberry Pi 4b with OS 10.30.2021 Desktop GUI:
 # yum install update                                            # sudo apt install python2
 # yum install python2                                           $ sudo apt install scapy
-# yum install python2-devel                                     put scapy in /usr/lib/python2.7/dist-packages, if not there already, but if not:
+# yum install python2-devel                                      Put scapy in /usr/lib/python2.7/dist-packages, if not there already, but if not:
 # yum install epel-release                                      $ sudo cp -r /usr/lib/python3/dist-packages/scapy* /usr/lib/python2.7/dist-packages
-# yum install python2-pip                                       or maybe:                                       
+# yum install python2-pip                                        or maybe:                                       
 # pip2 install scapy                                            $ sudo cp -r /usr/lib/python3.6/dist-packages/scapy* /usr/libp/python2.7/dist-packages                                                                                                                             
-# yum install gcc                                               or maybe:
-# yum group install "Server with GUI" (optional)                $ sudo cp-r /usr/lib/python3.7/dist-packages/scapy /usr/lib/python2.7/dist-packages
-# yum install libpcap-dev                                       $ sudo apt-get install libpcap-dev
+# yum install gcc                                                or maybe:
+# dnf —enablerepo=powertools install libpcap-devel              $ sudo cp-r /usr/lib/python3.7/dist-packages/scapy /usr/lib/python2.7/dist-packages
+ For CentOS 7 minimal try (untested):                            $ sudo apt-get install libpcap-dev
+# yum install libpcap-devel
 
-In root's .bash_profile disable TCP Offload on sender example: ethtool --offload enp0s25 rx off tx off, but is only necessary when there are consistent
-problems receiving decryptable or readable plaintext files.
+In root's .bash_profile disable TCP Offload for sender, for example: ethtool --offload enp0s25 rx off tx off, but this is only necessary when there
+are consistent problems receiving decryptable or readable plaintext files on all IP paths.
 
 Linksys WRT3200ACM with firmware OpenWRT 19.07.5 r11257=5090i52ae3/LuCi openwrt-19.07 branch git-20.341.57626-5155b5 and
 Netgear Nighthawk AC1750 Model R6700-3 with firmware V1.04.106_10.0.80 will both port forward or pass an Invalid TCP Checksum.
