@@ -32,7 +32,8 @@ more NATs in the point-to-point IP path, and conveniently this same value define
 Invalid TCP Checksum protocol encodes an encrypted text file two bytes at a time: when those two bytes are ffff then nsendit.py first sends an ESCAPE
 packet, then sends a SYN with invalid TCP Checksum 0xffff and receiver interprets both packets together as only one packet 0xffff, even if the second 
 packet is received as 0x0. A lone 0x0 or 0xffff received is interpreted as 0x0. When the two bytes of the sender's ESCAPE hex value need to be sent, 
-then the sender's ESCAPE packet is sent twice and receiver interprets two received ESCAPE packets in succession as one. 
+then the sender's ESCAPE packet is sent twice and receiver interprets two received ESCAPE packets in succession as one. When sender's ESCAPE hex value
+is 0xffff in tempfile4receive1, then receiver's decryption will still be viable because ESCAPE-ESCAPE and ESCAPE-0xffff are the same thing to receiver.
 
 On a LAN, or point-to-point between two VPS Public IP addresses, there is no OFFSET (i.e. OFFSET=0x0), yet receiver's accumulated translatedbinaryout 
 file is still gpg -d decryptable.   Otherwise, there is a non-zero OFFSET indicating that there are one or more NATs in the direct IP point-to-point 
@@ -40,21 +41,22 @@ IP network path that is subtracted and modulo 0x10000 to each subsequent receive
 file. Not all NATs will port forward an invalid TCP Checksum SYN packet and pass an invalid TCP Checksum on the way out, but there are some home 
 wireless routers that do. 
 
-Invalid TCP Checksum protocol is intended for binary mode encrypted text file transfer between little-endian end-points, preferably only using even length 
-files (as per ls -l), to avoid bogus gpg decryption errors reported on odd length files.  
+Invalid TCP Checksum protocol is intended for binary mode encrypted text file transfer between little-endian end-points, preferably only using even 
+length files (as per ls -l), to avoid bogus gpg decryption errors reported on odd length files. 
 
 Preparations for Linux CentOS 7 minimal install on USB:         Preparations for install on Raspberry Pi 4b with OS 10.30.2021 Desktop GUI:
 # yum install update                                            # sudo apt install python2
 # yum install python2                                           $ sudo apt install scapy
-# yum install python2-devel                                     $ sudo cp -r /lib/python3/dist-packages/scapy* /lib/python2.7/dist-packages
-# yum install epel-release                                      or maybe,
-# yum install python2-pip                                       $ sudo cp -r /lib/python3.6/dist-packages/scapy* /lib/python2.7/dist-packages
-# pip2 install scapy                                            $ sudo apt-get install libpcap-dev
-# yum install libpcap-devel
-# yum install gcc
-# yum group install "Server with GUI" (optional)
+# yum install python2-devel                                     put scapy in /usr/lib/python2.7/dist-packages, if not there already, but if not:
+# yum install epel-release                                      $ sudo cp -r /usr/lib/python3/dist-packages/scapy* /usr/lib/python2.7/dist-packages
+# yum install python2-pip                                       or maybe:                                       
+# pip2 install scapy                                            $ sudo cp -r /usr/lib/python3.6/dist-packages/scapy* /usr/libp/python2.7/dist-packages                                                                                                                             
+# yum install gcc                                               or maybe:
+# yum group install "Server with GUI" (optional)                $ sudo cp-r /usr/lib/python3.7/dist-packages/scapy /usr/lib/python2.7/dist-packages
+# dnf —enablerepo=powertools install libpcap-devel              $ sudo apt-get install libpcap-dev
 
-In root's .bash_profile disable TCP Offload on sender example: ethtool --offload enp0s25 rx off tx off 
+In root's .bash_profile disable TCP Offload on sender example: ethtool --offload enp0s25 rx off tx off, but is only necessary when there are consistent
+problems receiving decryptable or readable plaintext files.
 
 Linksys WRT3200ACM with firmware OpenWRT 19.07.5 r11257=5090i52ae3/LuCi openwrt-19.07 branch git-20.341.57626-5155b5 and
 Netgear Nighthawk AC1750 Model R6700-3 with firmware V1.04.106_10.0.80 will both port forward or pass an Invalid TCP Checksum.
