@@ -37,7 +37,7 @@ is 0xffff in tempfile4receive1, then receiver's decryption will still be viable 
 
 On a LAN, or point-to-point between two VPS Public IP addresses, there is no OFFSET (i.e. OFFSET=0x0), yet receiver's accumulated translatedbinaryout 
 file is still gpg -d decryptable.   Otherwise, there is a non-zero OFFSET indicating that there are one or more NATs in the direct IP point-to-point 
-IP network path that is subtracted and modulo 0x10000 to each subsequent received discernible TCP Checksum, before storing in the translatedbinaryout 
+IP network path that is subtracted and modulo 0x100000 to each subsequent received discernible TCP Checksum, before storing in the translatedbinaryout 
 file. Not all NATs will port forward an invalid TCP Checksum SYN packet and pass an invalid TCP Checksum on the way out, but there are some home 
 wireless routers that do. 
 
