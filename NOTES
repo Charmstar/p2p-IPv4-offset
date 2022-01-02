@@ -1,24 +1,26 @@
 HANDSHAKE
-The only handshake is the sender’s first SYN packet must receive a SYN-ACK back, if not in a few seconds, then the sender knows to postpone sending 
-because the far-end is powered down. Both ends need to always either be powered down or in receive mode when not sending. 
+The only handshake is the sender’s first SYN packet must receive a SYN-ACK back, if not in a few seconds, then the sender knows to postpone
+sending because the far-end is powered down. Both ends need to always either be powered down or in receive mode when not sending. 
 
 ACKNOWLEDGING SUCCESSFUL FILE TRANSFER
-After several always perfect encrypted file transfers it is tempting to assume no acknowledgement is ever needed. But there are known network 
-conditions that may interfere a given IP packet’s path, so some form of acknowledgment is needed. 
+After many always perfect encrypted file transfers, it is tempting to assume no acknowledgement is ever needed. But there are known network 
+conditions that may interfere on a given IP packet’s path, so some form of acknowledgment is needed. 
 
-Since most transfers are perfect, it is suggested that the receiver positively acknowledge a received translatedbinaryout file that decrypts, or 
-is recognizable plaintext, by sending back the translatedbinaryout file of just received bytes. Don’t send anything back when decryption fails or 
-when plaintext is unusable. Sender then compares the bytes sent back by receiver to the bytes sent forward. When both are the same, as they most 
-often will be, then there is an implicit acknowledgment that the sender’s message has been received properly.
+Since most transfers are perfect, it is suggested that the receiver only positively acknowledge a received translatedbinaryout file that 
+decrypts by sending back the translatedbinaryout file of just received bytes. Don’t send anything back when decryption fails, or optionally
+send back plaintext to help describe the decryption failure: "Received 309 bytes". "Wrong key", etc. Sender then compares the bytes sent 
+back by receiver to the encrypted bytes sent forward. When both are the same, as they most often will be, then there is an implicit 
+acknowledgment that the sender’s message has been received properly. When not the same, sender resends the file transfer.
 
-When the bytes sender receives don’t match the bytes sent then the sender can repeat the process until sender sees the bytes received back are equal
-to bytes sent. Sender will also notice when there is no positive acknowledgment and will repeat the file transfer to receiver, knowing that the 
-receiver’s SYN-ACK handshake has confirmed that the receiver is not powered down. 
+When the bytes sender receives don’t match the bytes sent then the sender can repeat the process until sender sees the bytes received back
+are equal to bytes sent. Sender will also notice when there is no positive acknowledgment or plaintext response and will repeat the file
+transfer to receiver, knowing that the receiver’s SYN-ACK handshake has confirmed that the receiver is not powered down. 
 
 DECRYPTION FAILURES
-There are network conditions that may cause transmission packet loss. Usually changing one or both IP addresses is needed to dodge an IP path that 
-has interference. Changing home wireless routers will change the DHCP IP address assigned by an ISP.
+There are network conditions that may cause transmission packet loss. Usually changing one or both IP addresses is needed to dodge an 
+IP path that has interference. Changing home wireless routers at one end will change the DHCP IP address assigned by an ISP. This creates
+a new IP pair and therefore a new IP path. If there is still interference, then both ends need to change IP addresses.
 
 TCP OFFLOAD
 TCP Offload only affects a sender, the receiver’s kernel always receives whole packets with a received TCP Checksum that may, or may not be 
-pre-evaluated and marked valid or invalid by a NIC.  
+pre-evaluated and marked valid or invalid by a NIC. Some senders will have TCP Offload effectively disabled by default, so need not disable.
