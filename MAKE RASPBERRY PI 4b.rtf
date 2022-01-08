@@ -62,8 +62,8 @@ When ready to send somefile.gpg, Control-C to stop the receiver program:
 Receiver determines whether the received file transfer is decryptable or otherwise useful: 
 14. gpg -d translatedbinaryout | hexdump to decrypt received encrypted files. If the file does not
 decrypt then try:
-14a.hexdump translatedbinaryout | {a bash command to convert file of hex integers to readable text} 
-to determine whether a file transfer is intended to be understandable plaintext.
+14a. cat translatedbinaryout  
+to determine whether a file transfer is intended to be plaintext.
 
 Receiver sends back what has just been received, but only when that file delivery decrypts:
 15. cd ../SENDER, sudo python2 nsendit.py w.x.y.z ../RECEIVER/translatedbinaryout
