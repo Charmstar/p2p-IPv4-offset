@@ -48,13 +48,13 @@ CentOS Stream 8 is the successor to CentOS 7. rufus converts a 10GB CentOS Strea
 
 	j.	# gpg -d translatedbinaryout | hexdump
 
-	k.	for smallish plaintext files that are not encrypted, for example Alook953e,
+	k.	for smallish plaintext files that are not encrypted: 
 
-	l.	# hexdump translatedbinaryout
+	l.	# cat translatedbinaryout  (Alook953e is a binary file included for testing, use hexdump Alook953e for files that contain only hex)
 
-	m.	Receiver indicates a negative acknowledgement of the entire file transfer by not sending back anything, otherwise when receiver is satisfied 
-  with the received results, receiver sends back (gleaning the source IP from previous packets as destination IP) the received bytes contained in 
-  receiver’s translatedbinaryout file.
+	m.	Receiver indicates a negative acknowledgement of the entire file transfer by not sending back anything, or by sending a plaintext 
+file transfer indicating why decryption failed, "309 packets received" or "wrong key." When decryption is good a positive acknowledgement is indicated.
+Receiver sends back (gleaning the source IP from previous packetsas destination IP) all the received bytes contained in receiver’s translatedbinaryout file.
 
-	n.	When sender receives receiver’s positive acknowledgment sender compares this received file with the sent file. If different, or no response 
-  at all, sender keeps re-sending until receiver’s positive acknowledgment matches what is sent. See forthcoming “MITM Protection and Bad IP Path Detection.” 
+	n.	When sender receives receiver’s positive acknowledgment, sender compares that received file with the originally sent file. If different, or
+no response at all, sender and receiver use plaintext files to decide what to do next. See forthcoming “MITM Protection and Bad IP Path Detection.” 
