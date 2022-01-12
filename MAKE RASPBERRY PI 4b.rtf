@@ -1,44 +1,36 @@
 
-Start with the SD Card Copier to clone your existing pi OS and prepare SENDSYNS for exclusive use on
-a separate SD, or download 2021-10-30-raspios-bullseye-armhf.zip from raspberrypi.com for a new
-install to a micro-SD. Instructions for "make scapy run in python2" may differ slightly for each. 
+Start with the SD Card Copier to clone your existing pi OS or prepare SENDSYNS for exclusive use on
+a separate SD: download 2021-10-30-raspios-bullseye-armhf.zip from raspberrypi.com for a new
+install to a micro-SD. 
 
 Raspberry Pi 4b OS preparation for SENDSYNS:
 
-Boot to GUI and then Enable SSH in pi's Desktop for Preferences->Raspberry->Interfaces 
-this will require a reboot. 
+Boot to GUI and then Enable SSH in pi's Desktop for Preferences->RaspberryPiCongiguration->Interfaces 
+this will require a reboot.
 
-1. sudo apt install python2
+1. sudo dpkg --configure -a
 2. sudo apt install scapy 
-
-Look where scapy is installed, it's files need to be in /usr/lib/python2.7/dist-packages/scapy*. 
-If it is not installed in python2, then the next step copies the scapy files and directories to 
-usr/lib/python2.7/dist-packages from either /usr/lib/python3/dist-packages, or from
-/usr/lib/python3.6/dist-packages, (or maybe the newer python3.7), whichever is the one that has
-the scapy files and directories. For example:
-
-3. sudo cp -r /usr/lib/python3/dist-packages/scapy* /usr/lib/python2.7/dist-packages
-4  sudo apt-get install libpcap-dev
+3. sudo apt install libpcap-dev
 
 Use another computer to scp SENDSYNS.cpio to rpi-4b:
-5. scp pi@w.x.y.z:/home/pi SENDSYNS.cpio
+4. scp pi@w.x.y.z:/home/pi SENDSYNS.cpio
 
 At /home/pi:
-6. cpio -idv < SENDSYNS.cpio
-7. cd SENDSYNS/SENDER
-8. gcc receive1.c -o receive1 -lpcap
+5. cpio -idv < SENDSYNS.cpio
+6. cd SENDSYNS/SENDER
+7. gcc receive1.c -o receive1 -lpcap
 Ignore any compiler warning, the compile is good.
-9. cd ../RECEIVER
-10 gcc receiver.c -o receiver -lpcap
+8. cd ../RECEIVER
+9. gcc receiver.c -o receiver -lpcap
 
 When ready to receive:
-11. sudo ./receiver eth0
+10. sudo ./receiver eth0
 
 To encrypt a file:
 gpg -e -u {email of sender's Private key} -r {email of recipient's Public key} somefile 
 produces somefile.gpg.
 
-If sender and receiver share the same key pair known only to them, then that key pair's email address
+If sender and receiver share the same gpg key pair known only to them, then that key pair's email
 is used for both the user (-u) and the recipient (-r) for encrypting. Now both sides are able to
 decrypt the same undamaged file. A round trip proves that receiver has received the intended payload. 
 
@@ -46,28 +38,29 @@ A couple of lost packets is the most common cause of file delivery decryption fa
 SYN or flipped bit will defeat receiver's decryption. These are infrequent but when they become
 persistent, it is probably right to try to "dodge" a bad IP pair for a new IP pair.
 
-Note that a plaintext file will very likely still be delivereable both-ways, or at least be received 
-and understood despite missing packets. Receiver in this case will either not send anything back to
-ask the sender to resend the file delivery, or receiver may send a short plaintext file delivery back 
-to the sender to indicate what went wrong and whether to resend or not. 
+Note that a plaintext file will very likely still be delivereable both-ways and at least be received 
+and understood despite missing packets. When decryptyion fails receiver will either not send anything
+back, or receiver may send a short plaintext file delivery ("309 packets received" or "wrong key")
+back to the sender to indicate what went wrong and whether to resend or not. 
 
-Take note whether noise is one-way or is in both directions of an IP pair's IP path. Is it intermittent
-or is it always a nuisance? Best advice is to change one or both IPs whenever "noise" prevents
-encrypted file transfers, yet plaintext file transfers may still be usable both ways.
-
-When ready to send somefile.gpg, Control-C to stop the receiver program:
+When ready to send somefile.gpg, sender hits Control-C to stop the receiver program:
 12. cd ../SENDER
 13. sudo python2 nsendit.py z.w.x.y somefile.gpg
 
-Receiver determines whether the received file transfer is decryptable or otherwise useful: 
-14. gpg -d translatedbinaryout | hexdump to decrypt received encrypted files. If the file does not
-decrypt then try:
+A solid blast of packets ends abruptly to signal the sender to cd ../RECEIVER; ./receiver eth0 to be
+ready for receiver's positive or negative acknowlegement and to signal the receiver to determine
+whether the received file transfer is decryptable or otherwise useful:
+
+14. gpg -d translatedbinaryout | hexdump to decrypt received encrypted files. 
+If the received file (translatedbinaryout) does not decrypt then try:
 14a. cat translatedbinaryout  
 to determine whether a file transfer is intended to be plaintext.
 
-Receiver sends back what has just been received, but only when that file delivery decrypts:
-15. cd ../SENDER, sudo python2 nsendit.py w.x.y.z ../RECEIVER/translatedbinaryout
-The receiver gleans the destination IP for this file delivery from the source IP of received SYNs.
+Receiver sends back what has just been received (translatedbinaryout) for positive acknowlegement,
+but only when that file delivery decrypts:
+15. cd ../SENDER
+16. sudo python2 nsendit.py w.x.y.z ../RECEIVER/translatedbinaryout
 
-16. When done sending, cd ../RECEIVER and restart receiver program, sudo ./receiver eth0, so that it
+The receiver gleans the destination IP for this file delivery from the source IP of received SYNs.
+17. When done sending, cd ../RECEIVER and restart receiver program, sudo ./receiver eth0, so that it
 is always available or powered down when not sending.
