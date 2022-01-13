@@ -48,7 +48,7 @@ When ready to send somefile.gpg, sender hits Control-C to stop the receiver prog
 12. cd ../SENDER
 13. sudo python2 nsendit.py z.w.x.y somefile.gpg
 
-(If you get "No module named scapy.all", use this kludge to make scapy run inside python2.7):
+(If you get "No module named scapy.all", manually install scapy to run inside python2.7):
 sudo cp -r /usr/lib/python3/dist-packages/scapy* /usr/lib/python2.7/dist-packages
 
 A solid blast of packets ends abruptly to signal to the sender to go back to receive mode: 
